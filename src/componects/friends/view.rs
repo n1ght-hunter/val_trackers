@@ -69,9 +69,7 @@ pub fn view(state: &State) -> Element {
     );
     friends_list.append(&mut offline_friends);
 
-    let all = widget::scrollable(
-        widget::Column::with_children(friends_list),
-    );
+    let all = widget::scrollable(widget::Column::with_children(friends_list));
 
-    widget::container(super::widget::ShowFriends::new(all)).max_height(400).into()
+    super::widget::ShowFriends::new(all).into()
 }
