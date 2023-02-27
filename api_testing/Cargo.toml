@@ -1,0 +1,18 @@
+[package]
+name = "api_testing"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+base64 = "0.13.1"
+# native-tls = "0.2"
+reqwest = {version = "0.11", features = ["json"]}
+serde = "1.0"
+serde_derive = "1.0"
+serde_json = "1.0"
+
+[dependencies.tokio]
+features = ["time", "full"]
+version = "1"
