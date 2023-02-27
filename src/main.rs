@@ -22,6 +22,7 @@ pub type Element<'a> = iced::Element<'a, Message, iced::Renderer<theme::Theme>>;
 #[tokio::main]
 async fn main() {
     dotenv::dotenv().ok();
+    helpers::check_riot_client::check_riot_client();
     let valorant_client = api::create_client().unwrap();
     let tokens = api::auth::full_auth(&valorant_client);
     let game_content = state::GameContent::new(&valorant_client);
