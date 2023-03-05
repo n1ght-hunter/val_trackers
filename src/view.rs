@@ -2,7 +2,7 @@ use iced::widget::{self, *};
 use strum::IntoEnumIterator;
 use strum_macros::{EnumIter, IntoStaticStr};
 
-use crate::{componects, pages::live::live_page, state::State, Element, Message};
+use crate::{componects, helpers, pages::live::live_page, state::State, Element, Message};
 
 #[derive(Clone, Debug, EnumIter, IntoStaticStr, Default)]
 pub enum Pages {
@@ -57,5 +57,7 @@ pub fn view(state: &State) -> Element {
             .into(),
     };
 
-    row![page, componects::friends::view(state)].into()
+    // row![page, componects::friends::view(state)].into()
+    helpers::view::friends_overlay::FriendsOverlay::new(page, componects::friends::view(state))
+        .into()
 }

@@ -36,14 +36,14 @@ impl container::StyleSheet for Theme {
             },
             Container::Friends => container::Appearance {
                 text_color: None,
-                background: color!(0, 0, 0, 0.4).into(),
+                background: color!(0, 0, 0, 0.99).into(),
                 border_radius: 1.0,
                 border_width: 0.0,
                 border_color: Color::BLACK,
             },
             Container::FriendsHeaders => container::Appearance {
                 text_color: None,
-                background: color!(255, 255, 200, 0.4).into(),
+                background: color!(255, 255, 200, 0.7).into(),
                 border_radius: 1.0,
                 border_width: 0.0,
                 border_color: Color::BLACK,

@@ -9,8 +9,12 @@ pub fn check_riot_client() {
         .len()
         < 1
     {
+        println!("starting riot client");
         process::Command::new("C:/Riot Games/Riot Client/RiotClientServices.exe")
             .args(["--headless"])
-            .spawn().unwrap();
+            .spawn()
+            .unwrap();
+    } else {
+        println!("riot client already open");
     }
 }

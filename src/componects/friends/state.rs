@@ -1,5 +1,3 @@
-
-
 use serde::Deserializer;
 use serde_derive::{Deserialize, Serialize};
 use serde_json::Value;
@@ -23,34 +21,6 @@ pub struct AllFriends {
     pub region: String,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct OnlineFriends {
-    pub actor: Value,
-    pub basic: String,
-    pub details: Value,
-    #[serde(rename = "game_name")]
-    pub game_name: String,
-    #[serde(rename = "game_tag")]
-    pub game_tag: String,
-    pub location: Value,
-    pub msg: Value,
-    pub name: String,
-    pub patchline: Option<String>,
-    pub pid: String,
-    pub platform: Option<String>,
-    #[serde(deserialize_with = "from_base64")]
-    pub private: Private,
-    pub private_jwt: Value,
-    pub product: String,
-    pub puuid: String,
-    pub region: String,
-    pub resource: String,
-    pub state: String,
-    pub summary: String,
-    pub time: i64,
-}
-
 #[derive(Debug, Clone, Default)]
 pub struct Friends {
     pub online_friends: Vec<OnlineFriends>,
@@ -68,21 +38,70 @@ impl Friends {
     }
 }
 
-fn from_base64<'de, D>(deserializer: D) -> Result<Private, D::Error>
-where
-    D: Deserializer<'de>,
-{
-    use serde::de::Error;
-    use serde::Deserialize;
-    String::deserialize(deserializer)
-        .and_then(|string| base64::decode(&string).map_err(|err| Error::custom(format!("failed to deserialize private friends: {}", err))))
-        .map(|bytes| serde_json::from_slice::<Private>(&bytes))
-        .and_then(|opt| opt.map_err(|err|Error::custom(format!("failed to deserialize private friends: {}", err))))
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OnlineFriends {
+    pub actor: Value,
+    pub basic: String,
+    pub details: Value,
+    #[serde(rename = "game_name")]
+    pub game_name: String,
+    #[serde(rename = "game_tag")]
+    pub game_tag: String,
+    pub location: Value,
+    pub msg: Value,
+    pub name: String,
+    pub patchline: Option<String>,
+    pub pid: String,
+    pub platform: Option<String>,
+
+    pub private_jwt: Value,
+    pub product: String,
+    pub puuid: String,
+    pub region: String,
+    pub resource: String,
+    pub state: String,
+    pub summary: String,
+    pub time: i64,
+}
+
+
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+enum Private {
+    #[serde(deserialize_with = "from_base64")]
+    Valorant(ValPrivate),
+    LOL(LOLPrivate),
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Private {
+pub struct LOLPrivate {
+    pub champion_id: String,
+    pub companion_id: String,
+    pub damage_skin_id: String,
+    pub game_queue_type: String,
+    pub game_status: String,
+    pub icon_override: String,
+    pub init_rank_stat: String,
+    pub level: String,
+    pub map_id: String,
+    pub map_skin_id: String,
+    pub mastery_score: String,
+    pub profile_icon: String,
+    pub puuid: String,
+    pub regalia: String,
+    pub skin_variant: String,
+    pub skinname: String,
+}
+
+
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ValPrivate {
     pub is_valid: bool,
     pub session_loop_state: String,
     pub party_owner_session_loop_state: String,
@@ -118,30 +137,22 @@ pub struct Private {
     pub is_idle: bool,
 }
 
-
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Presences {
-    pub actor: Value,
-    pub basic: String,
-    pub details: Value,
-    #[serde(rename = "game_name")]
-    pub game_name: String,
-    #[serde(rename = "game_tag")]
-    pub game_tag: String,
-    pub location: Value,
-    pub msg: Value,
-    pub name: String,
-    pub patchline: Option<String>,
-    pub pid: String,
-    pub platform: Option<String>,
-    pub private: String,
-    pub private_jwt: Value,
-    pub product: String,
-    pub puuid: String,
-    pub region: String,
-    pub resource: String,
-    pub state: String,
-    pub summary: String,
-    pub time: i64,
+fn from_base64<'de, D>(deserializer: D) -> Result<ValPrivate, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    use serde::de::Error;
+    use serde::Deserialize;
+    String::deserialize(deserializer)
+        .and_then(|string| {
+            base64::decode(&string).map_err(|err| {
+                Error::custom(format!("failed to deserialize private friends: {}", err))
+            })
+        })
+        .map(|bytes| serde_json::from_slice::<ValPrivate>(&bytes))
+        .and_then(|opt| {
+            opt.map_err(|err| {
+                Error::custom(format!("failed to deserialize private friends: {}", err))
+            })
+        })
 }

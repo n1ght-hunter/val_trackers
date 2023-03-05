@@ -1,4 +1,5 @@
 use iced::{
+    color,
     mouse::{self, Button},
     Color, Element, Rectangle, Size,
 };
@@ -7,6 +8,8 @@ use iced_native::{
     widget::{tree, Tree},
     Widget,
 };
+
+use crate::theme::svg;
 
 pub struct ShowFriends<'a, Message, Renderer> {
     element: Element<'a, Message, Renderer>,
@@ -138,7 +141,7 @@ where
         style: &iced_native::renderer::Style,
         layout: iced_native::Layout<'_>,
         cursor_position: iced::Point,
-        viewport: &iced::Rectangle,
+        _viewport: &iced::Rectangle,
     ) {
         let bounds = layout.bounds();
         let state = tree.state.downcast_ref::<State>();
@@ -160,6 +163,27 @@ where
             }
         };
 
+        let outer_button = Rectangle {
+            width: 30.0,
+            height: 35.0,
+            x: svg_bounds.x - 5.0,
+            y: svg_bounds.y - 5.0,
+        };
+
+        renderer.fill_quad(
+            iced_native::renderer::Quad {
+                bounds: outer_button,
+                border_radius: [50.0, 0.0, 0.0, 50.0].into(),
+                border_width: 2.0,
+                border_color: Color::WHITE.into(),
+            },
+            if outer_button.contains(cursor_position) {
+                color!(0, 0, 0, 0.7).into()
+            } else {
+                Color::TRANSPARENT
+            },
+        );
+
         renderer.draw(
             if state.open {
                 state.close_svg.clone()
@@ -169,7 +193,6 @@ where
             Color::WHITE.into(),
             svg_bounds,
         );
-        // renderer.with_layer(bounds, |renderer: &mut Renderer| {
         if state.open {
             self.element.as_widget().draw(
                 &tree.children[0],
@@ -181,7 +204,49 @@ where
                 &bounds,
             );
         }
-        // });
+    }
+
+    fn mouse_interaction(
+        &self,
+        tree: &Tree,
+        layout: iced_native::Layout<'_>,
+        cursor_position: iced::Point,
+        _viewport: &Rectangle,
+        _renderer: &Renderer,
+    ) -> iced_native::mouse::Interaction {
+        let bounds = layout.bounds();
+        let state = tree.state.downcast_ref::<State>();
+
+        let svg_bounds = if state.open {
+            Rectangle {
+                width: 25.0,
+                height: 25.0,
+                x: bounds.x - 25.0,
+                y: bounds.y + 10.0,
+            }
+        } else {
+            Rectangle {
+                width: 25.0,
+                height: 25.0,
+                x: bounds.x + bounds.width - 25.0,
+                y: bounds.y + 10.0,
+            }
+        };
+
+        let outer_button = Rectangle {
+            width: 30.0,
+            height: 35.0,
+            x: svg_bounds.x - 5.0,
+            y: svg_bounds.y - 5.0,
+        };
+
+        let is_mouse_over = outer_button.contains(cursor_position);
+
+        if is_mouse_over {
+            mouse::Interaction::Pointer
+        } else {
+            mouse::Interaction::default()
+        }
     }
 }
 
