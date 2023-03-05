@@ -28,7 +28,7 @@ pub fn subscription(lockfile: &LockFile, client: &Client) -> Subscription<Messag
                             println!("{}", err);
                             Vec::new()
                         });
-                        let online_friends = get_online_friends(&file, &client)
+                        let online_friends = get_online_friends(&all_friends,&file, &client)
                             .await
                             .unwrap_or_else(|err| {
                                 println!("{}", err);
@@ -40,6 +40,8 @@ pub fn subscription(lockfile: &LockFile, client: &Client) -> Subscription<Messag
                             .into_iter()
                             .filter(|f| online_friends.iter().any(|x| x.game_name != f.game_name))
                             .collect();
+
+                        println!("onlinefreinds {:?}", online_friends);
 
                         return (
                             Some(Friends {
@@ -60,7 +62,7 @@ pub fn subscription(lockfile: &LockFile, client: &Client) -> Subscription<Messag
                             println!("{}", err);
                             Vec::new()
                         });
-                        let online_friends = get_online_friends(&file, &client)
+                        let online_friends = get_online_friends(&all_friends, &file, &client)
                             .await
                             .unwrap_or_else(|err| {
                                 println!("{}", err);
@@ -70,7 +72,11 @@ pub fn subscription(lockfile: &LockFile, client: &Client) -> Subscription<Messag
                         let offline_friends = all_friends
                             .clone()
                             .into_iter()
-                            .filter(|all_friends| !online_friends.iter().any(|x| x.game_name == all_friends.game_name))
+                            .filter(|all_friends| {
+                                !online_friends
+                                    .iter()
+                                    .any(|x| x.game_name == all_friends.game_name)
+                            })
                             .collect();
 
                         return (
@@ -117,10 +123,11 @@ pub struct OnlineFriendsSerialize {
 }
 
 async fn get_online_friends(
+    all_friends: &Vec<AllFriends>,
     lockfile: &File,
     client: &Client,
 ) -> Result<Vec<OnlineFriends>, reqwest::Error> {
-    Ok(client
+    let presences = client
         .get(format!(
             "https://127.0.0.1:{}/chat/v4/presences",
             &lockfile.port
@@ -130,5 +137,12 @@ async fn get_online_friends(
         .await?
         .json::<OnlineFriendsSerialize>()
         .await?
-        .presences)
+        .presences;
+
+    let online_friends = presences
+        .into_iter()
+        .filter(|x| all_friends.iter().any(|f| f.puuid == x.puuid))
+        .collect();
+
+    Ok(online_friends)
 }

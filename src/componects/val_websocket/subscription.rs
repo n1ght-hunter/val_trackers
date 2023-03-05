@@ -158,7 +158,7 @@ pub fn subscription(lockfile: &LockFile) -> Subscription<crate::Message> {
                                             ValState::Connected(websocket, lockfile),
                                         );
                                     } else {
-                                        println!("json: {}", json);
+                                        println!("INGAME EVENT NOT WORKING: {}", json);
                                     }
                                 }
                                 (None, ValState::Connected(websocket, lockfile))

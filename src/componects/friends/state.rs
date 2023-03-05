@@ -75,9 +75,9 @@ where
     use serde::de::Error;
     use serde::Deserialize;
     String::deserialize(deserializer)
-        .and_then(|string| base64::decode(&string).map_err(|err| Error::custom(err.to_string())))
+        .and_then(|string| base64::decode(&string).map_err(|err| Error::custom(format!("failed to deserialize private friends: {}", err))))
         .map(|bytes| serde_json::from_slice::<Private>(&bytes))
-        .and_then(|opt| opt.map_err(|_|Error::custom("failed to deserialize private friends")))
+        .and_then(|opt| opt.map_err(|err|Error::custom(format!("failed to deserialize private friends: {}", err))))
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -116,4 +116,32 @@ pub struct Private {
     pub competitive_tier: i64,
     pub leaderboard_position: i64,
     pub is_idle: bool,
+}
+
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Presences {
+    pub actor: Value,
+    pub basic: String,
+    pub details: Value,
+    #[serde(rename = "game_name")]
+    pub game_name: String,
+    #[serde(rename = "game_tag")]
+    pub game_tag: String,
+    pub location: Value,
+    pub msg: Value,
+    pub name: String,
+    pub patchline: Option<String>,
+    pub pid: String,
+    pub platform: Option<String>,
+    pub private: String,
+    pub private_jwt: Value,
+    pub product: String,
+    pub puuid: String,
+    pub region: String,
+    pub resource: String,
+    pub state: String,
+    pub summary: String,
+    pub time: i64,
 }
