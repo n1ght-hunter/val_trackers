@@ -1,5 +1,7 @@
-#![windows_subsystem = "windows"]
-
+#![cfg_attr(
+    all(target_os = "windows", not(debug_assertions),),
+    windows_subsystem = "windows"
+)]
 
 pub mod auth;
 pub mod componects;
@@ -10,7 +12,6 @@ pub mod subscriptions;
 pub mod theme;
 pub mod update;
 pub mod view;
-
 
 use iced::{executor, Application, Command, Settings};
 
