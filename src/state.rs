@@ -35,19 +35,15 @@ impl State {
     pub fn init() -> (State, iced::Command<Message>) {
         helpers::check_riot_client::check_riot_client();
 
-        let (valorant_client, tokens, game_content) = tokio::runtime::Builder::new_multi_thread()
-            .enable_all()
-            .build()
-            .unwrap()
-            .block_on(async {
-                let valorant_client = api::create_client().unwrap();
-                let tokens = api::auth::full_auth(&valorant_client);
-                let game_content = GameContent::new(&valorant_client);
+        let (valorant_client, tokens, game_content) = iced::futures::executor::block_on(async {
+            let valorant_client = api::create_client().unwrap();
+            let tokens = api::auth::full_auth(&valorant_client);
+            let game_content = GameContent::new(&valorant_client);
 
-                let (tokens, game_content) = tokio::join!(tokens, game_content);
+            let (tokens, game_content) = tokio::join!(tokens, game_content);
 
-                (valorant_client, Arc::new(tokens), Arc::new(game_content))
-            });
+            (valorant_client, Arc::new(tokens), Arc::new(game_content))
+        });
         let client = reqwest::Client::new();
         let non_secure_client = reqwest::ClientBuilder::new()
             .danger_accept_invalid_certs(true)
