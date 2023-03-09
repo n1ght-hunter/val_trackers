@@ -1,7 +1,7 @@
 use iced::{alignment, color, Color, ContentFit, Element, Rectangle, Size, Vector};
 use iced_native::{layout, renderer::Quad, Widget};
 
-use super::QuickShowStore;
+use super::state::QuickShowStore;
 
 pub struct StoreWeapon<'a> {
     store_offer: &'a QuickShowStore,

@@ -1,99 +1,111 @@
-use iced::{subscription, Subscription};
+use iced::subscription;
 
 use reqwest::Client;
 use serde_derive::{Deserialize, Serialize};
 
 use crate::{
+    helpers::componet_trait::Subscription,
     subscriptions::lockfile::{File, LockFile},
     Message,
 };
 
-use super::state::{AllFriends, Friends, OnlineFriends};
+use super::{
+    state::{AllFriends, OnlineFriends},
+    Friends,
+};
 
 enum State {
     Start(LockFile, Client),
     Continue(LockFile, Client),
 }
 
-pub fn subscription(lockfile: &LockFile, client: &Client) -> Subscription<Message> {
-    subscription::unfold(
-        "friends_list",
-        State::Start(lockfile.clone(), client.clone()),
-        |state| async move {
-            match state {
-                State::Start(lockfile, client) => {
-                    let file = lockfile.get_file().await;
-                    if let Some(file) = file {
-                        let all_friends = get_friends(&file, &client).await.unwrap_or_else(|err| {
-                            println!("{}", err);
-                            Vec::new()
-                        });
-                        let online_friends = get_online_friends(&all_friends,&file, &client)
-                            .await
-                            .unwrap_or_else(|err| {
-                                println!("{}", err);
-                                Vec::new()
-                            });
+impl Subscription for Friends {
+    type Params = ();
 
-                        let offline_friends = all_friends
-                            .clone()
-                            .into_iter()
-                            .filter(|f| online_friends.iter().any(|x| x.game_name != f.game_name))
-                            .collect();
+    fn subscription(state: &crate::State, params: Self::Params) -> iced::Subscription<Message> {
+        subscription::unfold(
+            "friends_list",
+            State::Start(state.lock_file.clone(), state.non_secure_client.clone()),
+            |state| async move {
+                match state {
+                    State::Start(lockfile, client) => {
+                        let file = lockfile.get_file().await;
+                        if let Some(file) = file {
+                            let all_friends =
+                                get_friends(&file, &client).await.unwrap_or_else(|err| {
+                                    println!("{}", err);
+                                    Vec::new()
+                                });
+                            let online_friends = get_online_friends(&all_friends, &file, &client)
+                                .await
+                                .unwrap_or_else(|err| {
+                                    println!("{}", err);
+                                    Vec::new()
+                                });
 
-                        println!("onlinefreinds {:?}", online_friends);
+                            let offline_friends = all_friends
+                                .clone()
+                                .into_iter()
+                                .filter(|f| {
+                                    online_friends.iter().any(|x| x.game_name != f.game_name)
+                                })
+                                .collect();
 
-                        return (
-                            Some(Friends {
-                                online_friends,
-                                offline_friends,
-                                all_friends,
-                            }),
-                            State::Continue(lockfile, client),
-                        );
+                            println!("onlinefreinds {:?}", online_friends);
+
+                            return (
+                                Some(Friends {
+                                    online_friends,
+                                    offline_friends,
+                                    all_friends,
+                                }),
+                                State::Continue(lockfile, client),
+                            );
+                        }
+                        (None, State::Continue(lockfile, client))
                     }
-                    (None, State::Continue(lockfile, client))
-                }
-                State::Continue(lockfile, client) => {
-                    tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
-                    let file = lockfile.get_file().await;
-                    if let Some(file) = file {
-                        let all_friends = get_friends(&file, &client).await.unwrap_or_else(|err| {
-                            println!("{}", err);
-                            Vec::new()
-                        });
-                        let online_friends = get_online_friends(&all_friends, &file, &client)
-                            .await
-                            .unwrap_or_else(|err| {
-                                println!("{}", err);
-                                Vec::new()
-                            });
+                    State::Continue(lockfile, client) => {
+                        tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
+                        let file = lockfile.get_file().await;
+                        if let Some(file) = file {
+                            let all_friends =
+                                get_friends(&file, &client).await.unwrap_or_else(|err| {
+                                    println!("{}", err);
+                                    Vec::new()
+                                });
+                            let online_friends = get_online_friends(&all_friends, &file, &client)
+                                .await
+                                .unwrap_or_else(|err| {
+                                    println!("{}", err);
+                                    Vec::new()
+                                });
 
-                        let offline_friends = all_friends
-                            .clone()
-                            .into_iter()
-                            .filter(|all_friends| {
-                                !online_friends
-                                    .iter()
-                                    .any(|x| x.game_name == all_friends.game_name)
-                            })
-                            .collect();
+                            let offline_friends = all_friends
+                                .clone()
+                                .into_iter()
+                                .filter(|all_friends| {
+                                    !online_friends
+                                        .iter()
+                                        .any(|x| x.game_name == all_friends.game_name)
+                                })
+                                .collect();
 
-                        return (
-                            Some(Friends {
-                                online_friends,
-                                offline_friends,
-                                all_friends,
-                            }),
-                            State::Continue(lockfile, client),
-                        );
+                            return (
+                                Some(Friends {
+                                    online_friends,
+                                    offline_friends,
+                                    all_friends,
+                                }),
+                                State::Continue(lockfile, client),
+                            );
+                        }
+                        (None, State::Continue(lockfile, client))
                     }
-                    (None, State::Continue(lockfile, client))
                 }
-            }
-        },
-    )
-    .map(Message::Friends)
+            },
+        )
+        .map(Message::Friends)
+    }
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]

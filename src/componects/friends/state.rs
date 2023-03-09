@@ -21,23 +21,6 @@ pub struct AllFriends {
     pub region: String,
 }
 
-#[derive(Debug, Clone, Default)]
-pub struct Friends {
-    pub online_friends: Vec<OnlineFriends>,
-    pub offline_friends: Vec<AllFriends>,
-    pub all_friends: Vec<AllFriends>,
-}
-
-impl Friends {
-    pub fn new() -> Self {
-        Self {
-            online_friends: Vec::new(),
-            offline_friends: Vec::new(),
-            all_friends: Vec::new(),
-        }
-    }
-}
-
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]

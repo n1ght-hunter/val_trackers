@@ -1,8 +1,3 @@
-#[derive(Clone, Debug, Default)]
-pub struct State {
-    pub weapons: Vec<crate::componects::store::QuickShowStore>,
-    pub bundles: Vec<Bundle>,
-}
 
 #[derive(Clone, Debug)]
 pub struct QuickShowStore {

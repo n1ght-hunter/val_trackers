@@ -1,11 +1,12 @@
-mod state;
-pub mod subscription;
-mod update;
-mod store_weapon;
-mod view;
 pub mod bundle;
+mod state;
+mod store_weapon;
+mod subscription;
+mod update;
+mod view;
 
-pub use state::{State, QuickShowStore};
-// pub use subscription::subscription;
-pub use update::{update, Event};
-pub use view::view;
+#[derive(Clone, Debug, Default)]
+pub struct Store {
+    pub weapons: Vec<state::QuickShowStore>,
+    pub bundles: Vec<state::Bundle>,
+}

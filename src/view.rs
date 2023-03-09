@@ -2,12 +2,12 @@ use iced::widget::{self, *};
 use strum::IntoEnumIterator;
 use strum_macros::{EnumIter, IntoStaticStr};
 
-use crate::{componects, helpers, pages::live::live_page, state::State, Element, Message};
+use crate::{componects, helpers::{self, componet_trait::View}, pages::live::live_page, state::{State, LiveState}, Element, Message};
 
 #[derive(Clone, Debug, EnumIter, IntoStaticStr, Default)]
 pub enum Pages {
     Home,
-    Live,
+    Live(LiveState),
     #[default]
     Store,
 }
@@ -27,7 +27,7 @@ pub fn view(state: &State) -> Element {
             .collect::<Vec<Element>>(),
     );
 
-    let page: Element = match state.page {
+    let page: Element = match &state.page {
         Pages::Home => {
             container(widget::column![display_user, menu])
                 .center_x()
@@ -43,21 +43,21 @@ pub fn view(state: &State) -> Element {
             //     col![].into()
             // }
         }
-        Pages::Live => container(widget::column![
+        Pages::Live(live_state) => container(widget::column![
             widget::column![display_user, menu],
-            live_page(&state.live_state)
+            live_page(&live_state)
         ])
         .center_x()
         .center_y()
         .into(),
 
-        Pages::Store => container(widget::column![menu, componects::store::view(state),])
+        Pages::Store => container(widget::column![menu, componects::store::Store::view(state),])
             .center_x()
             .center_y()
             .into(),
     };
 
     // row![page, componects::friends::view(state)].into()
-    helpers::view::friends_overlay::FriendsOverlay::new(page, componects::friends::view(state))
+    helpers::view::friends_overlay::FriendsOverlay::new(page, componects::friends::Friends::view(state))
         .into()
 }

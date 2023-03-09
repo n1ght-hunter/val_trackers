@@ -1,10 +1,7 @@
 use std::sync::Arc;
 
 use crate::{
-    componects::{
-        self,
-        friends::{self, state::Friends},
-    },
+    componects::{self, friends},
     helpers,
     subscriptions::lockfile::LockFile,
     view::Pages,
@@ -23,11 +20,11 @@ pub struct State {
     pub websocket_status: String,
     pub live_state: LiveState,
 
-    pub friends: friends::State,
+    pub friends: friends::Friends,
 
     pub tokens: Arc<api::auth::FullAuth>,
     pub valorant_client: api::Client,
-    pub store: componects::store::State,
+    pub store: componects::store::Store,
     pub game_content: Arc<GameContent>,
 }
 
@@ -96,7 +93,7 @@ pub struct PreGameData {
 pub enum LiveState {
     #[default]
     Menu,
-    PreGame(PreGameData),
+    PreGame(api::pregame::PreMatch),
     InGame,
 }
 

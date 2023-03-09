@@ -1,12 +1,11 @@
 use iced::Command;
 
-
 use crate::{
-    componects::{friends, val_websocket, store},
+    componects::{friends, store, val_websocket},
     state::{HomePages, LiveState},
     subscriptions::lockfile::File,
     view::Pages,
-    State,
+    State, helpers::{async_update::{async_update, AsyncUpdate}, componet_trait::Update},
 };
 
 #[derive(Clone, Debug)]
@@ -24,12 +23,13 @@ pub enum Message {
     UpdateUser(String),
     Receiver(Recieved),
     SetPage(Pages),
-    Friends(friends::state::Friends),
-    Store(store::Event),
+    Friends(friends::Friends),
+    Store(<store::Store as Update>::Message),
     SetHomePage(HomePages),
     WebSocketEvent(val_websocket::Event),
     File(Option<String>),
     SetLiveState(LiveState),
+    AsyncUpdate(AsyncUpdate),
 }
 
 pub fn update(state: &mut State, message: Message) -> iced::Command<Message> {
@@ -87,7 +87,8 @@ pub fn update(state: &mut State, message: Message) -> iced::Command<Message> {
         }
         Message::SetLiveState(new_state) => state.live_state = new_state,
         Message::Friends(friends) => state.friends = friends,
-        Message::Store(x) => return store::update(state, x),
+        Message::Store(x) => return store::Store::update(state, x),
+        Message::AsyncUpdate(event) => return async_update(state, event),
     }
     Command::none()
 }

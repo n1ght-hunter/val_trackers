@@ -1,48 +1,54 @@
-use std::borrow::Cow;
+use std::{borrow::Cow, sync::Arc};
 
 use api::{auth::FullAuth, game_content};
 use chrono::{Duration, Utc};
 use iced::{color, subscription, widget::image, Color};
 
-use crate::{componects, state::GameContent, Message};
+use crate::{componects, helpers::componet_trait::Subscription, state::GameContent, Message};
+
+use super::Store;
 
 // UTC Time 1:00 am
 
 enum StoreWait {
-    Start(api::Client, FullAuth, GameContent),
-    Wait(api::Client, FullAuth, GameContent),
+    Start(api::Client, Arc<FullAuth>, Arc<GameContent>),
+    Wait(api::Client, Arc<FullAuth>, Arc<GameContent>),
 }
 
-pub fn subscription(
-    client: &api::Client,
-    auth: &FullAuth,
-    game_content: &GameContent,
-) -> iced::Subscription<Message> {
-    subscription::unfold(
-        "friends_list",
-        StoreWait::Start(client.clone(), auth.clone(), game_content.clone()),
-        |state| async move {
-            match state {
-                StoreWait::Start(client, auth, game_content) => {
-                    let store_weapons = get_store(&client, &auth, &game_content).await;
-                    (
-                        Some(store_weapons),
-                        StoreWait::Wait(client, auth, game_content),
-                    )
-                }
-                StoreWait::Wait(client, auth, game_content) => {
-                    tokio::time::sleep(duration_till_store_update()).await;
-                    let store_weapons = get_store(&client, &auth, &game_content).await;
+impl Subscription for Store {
+    type Params = ();
 
-                    (
-                        Some(store_weapons),
-                        StoreWait::Wait(client, auth, game_content),
-                    )
+    fn subscription(state: &crate::State, params: Self::Params) -> iced::Subscription<Message> {
+        subscription::unfold(
+            "friends_list",
+            StoreWait::Start(
+                state.valorant_client.clone(),
+                state.tokens.clone(),
+                state.game_content.clone(),
+            ),
+            |state| async move {
+                match state {
+                    StoreWait::Start(client, auth, game_content) => {
+                        let store_weapons = get_store(&client, &auth, &game_content).await;
+                        (
+                            Some(store_weapons),
+                            StoreWait::Wait(client, auth, game_content),
+                        )
+                    }
+                    StoreWait::Wait(client, auth, game_content) => {
+                        tokio::time::sleep(duration_till_store_update()).await;
+                        let store_weapons = get_store(&client, &auth, &game_content).await;
+
+                        (
+                            Some(store_weapons),
+                            StoreWait::Wait(client, auth, game_content),
+                        )
+                    }
                 }
-            }
-        },
-    )
-    .map(|(x, y)| Message::Store(componects::store::Event::Store(x, y)))
+            },
+        )
+        .map(|(x, y)| Message::Store(super::update::Event::Store(x, y)))
+    }
 }
 
 pub fn duration_till_store_update() -> std::time::Duration {
@@ -60,7 +66,7 @@ pub async fn get_store(
     client: &api::Client,
     auth: &FullAuth,
     game_content: &GameContent,
-) -> (Vec<super::QuickShowStore>, Vec<super::state::Bundle>) {
+) -> (Vec<super::state::QuickShowStore>, Vec<super::state::Bundle>) {
     let store = api::val_api::get_store(
         &client,
         "ap",
@@ -107,7 +113,7 @@ pub async fn get_store(
 
             let background_color = hex_to_color(&tier.highlight_color);
 
-            super::QuickShowStore {
+            super::state::QuickShowStore {
                 weapon,
                 store_item: store_item.clone(),
                 background_icon,

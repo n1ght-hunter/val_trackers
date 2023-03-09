@@ -1,6 +1,7 @@
 use iced::Command;
 
 use crate::{
+    helpers::async_update::{async_update, AsyncUpdate},
     state::{LiveState, PreGameData, State},
     Message,
 };
@@ -26,9 +27,18 @@ pub fn update(state: &mut State, event: Event) -> Command<Message> {
             messages::Messages::ServiceMessage(message) => {
                 if state.live_state == LiveState::Menu {
                     if let Some(id) = message.pre_match() {
-                        state.live_state = LiveState::PreGame(PreGameData {
-                            pre_game_match_id: id,
-                        });
+                        let client = state.valorant_client.clone();
+                        let full_auth = state.tokens.clone();
+                        return Command::perform(
+                            async move {
+                                let prematch = api::pregame::get_match(&client, full_auth, id)
+                                    .await
+                                    .unwrap();
+
+                                AsyncUpdate::PreMatch(prematch)
+                            },
+                            Message::AsyncUpdate,
+                        );
                     }
                 }
             }
