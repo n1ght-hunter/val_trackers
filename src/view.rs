@@ -4,12 +4,17 @@ use strum_macros::{EnumIter, IntoStaticStr};
 
 use crate::{componects, helpers::{self, componet_trait::View}, pages::live::live_page, state::{State, LiveState}, Element, Message};
 
-#[derive(Clone, Debug, EnumIter, IntoStaticStr, Default)]
+#[derive(Clone, Debug, EnumIter, IntoStaticStr)]
 pub enum Pages {
     Home,
     Live(LiveState),
-    #[default]
     Store,
+}
+
+impl Default for Pages {
+    fn default() -> Self {
+        Pages::Live(LiveState::Menu)
+    }
 }
 
 pub fn view(state: &State) -> Element {

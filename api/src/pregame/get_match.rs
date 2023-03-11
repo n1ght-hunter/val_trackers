@@ -11,6 +11,7 @@ use crate::auth::FullAuth;
 pub async fn get_match(client: &Client, full_auth: Arc<FullAuth>, pre_match_id: String) -> Result<PreMatch, reqwest_impersonate::Error> {
     client
         .get(format!("https://glz-{}-1.{}.a.pvp.net/pregame/v1/matches/{}", full_auth.region, full_auth.region, pre_match_id))
+        .header("X-Riot-Entitlements-JWT", &full_auth.entitlement_token)
         .header("Content-Type", "application/json")
         .bearer_auth(full_auth.token.clone())
         .send()
