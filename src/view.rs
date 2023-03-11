@@ -1,21 +1,18 @@
+
 use iced::widget::{self, *};
 use strum::IntoEnumIterator;
 use strum_macros::{EnumIter, IntoStaticStr};
 
 use crate::{componects, helpers::{self, componet_trait::View}, pages::live::live_page, state::{State, LiveState}, Element, Message};
 
-#[derive(Clone, Debug, EnumIter, IntoStaticStr)]
+#[derive(Clone, Debug, EnumIter, IntoStaticStr, Default)]
 pub enum Pages {
     Home,
-    Live(LiveState),
+    #[default]
+    Live,
     Store,
 }
 
-impl Default for Pages {
-    fn default() -> Self {
-        Pages::Live(LiveState::Menu)
-    }
-}
 
 pub fn view(state: &State) -> Element {
     let display_user = row![text(format!(
@@ -48,9 +45,9 @@ pub fn view(state: &State) -> Element {
             //     col![].into()
             // }
         }
-        Pages::Live(live_state) => container(widget::column![
+        Pages::Live => container(widget::column![
             widget::column![display_user, menu],
-            live_page(&live_state)
+            live_page(state)
         ])
         .center_x()
         .center_y()

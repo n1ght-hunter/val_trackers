@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{sync::Arc, collections::HashMap};
 
 use crate::{
     componects::{self, friends},
@@ -19,6 +19,8 @@ pub struct State {
     pub non_secure_client: reqwest::Client,
     pub websocket_status: String,
     pub live_state: LiveState,
+
+    pub id_to_name: HashMap<String, (String, String)>,
 
     pub friends: friends::Friends,
 
@@ -94,7 +96,7 @@ pub enum LiveState {
     #[default]
     Menu,
     PreGame(api::pregame::PreMatch),
-    InGame,
+    InGame(api::current_game::Match),
 }
 
 #[derive(Clone, Debug, Default)]

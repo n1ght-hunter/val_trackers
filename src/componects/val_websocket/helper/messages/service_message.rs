@@ -21,6 +21,16 @@ impl ServiceMessage {
             None
         }
     }
+
+    pub fn core_game(self) -> Option<String> {
+        if self.data.service == "core-game" {
+            let string_parts = self.data.resource.split("/").collect::<Vec<&str>>();
+
+            Some(string_parts[string_parts.len() - 1].to_string())
+        } else {
+            None
+        }
+    }
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
