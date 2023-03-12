@@ -13,7 +13,7 @@ pub fn live_page<'a>(state: &'a State) -> crate::Element<'a> {
     };
 
     match &state.live_state {
-        LiveState::Menu => container(text("live page")).into(),
+        LiveState::Menu => container(text("In Menu")).into(),
         LiveState::PreGame(game_data) => {
             let friendly_team = game_data
                 .ally_team

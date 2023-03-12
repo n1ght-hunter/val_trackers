@@ -159,6 +159,7 @@ pub fn subscription(lockfile: &LockFile) -> Subscription<crate::Message> {
                                         );
                                     } else {
                                         println!("INGAME EVENT NOT WORKING: {}", json);
+                                        println!("Error {:?}", resualt_message.unwrap_err());
                                     }
                                 }
                                 (None, ValState::Connected(websocket, lockfile))

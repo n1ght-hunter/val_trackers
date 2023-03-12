@@ -63,7 +63,12 @@ pub fn update(state: &mut State, event: Event) -> Command<Message> {
                         );
                     }
                 }
-                LiveState::InGame(_) => {}
+                LiveState::InGame(_) => {
+                    if message.menu() {
+                        state.live_state = crate::state::LiveState::Menu;
+                    }
+                }
+
             },
         },
         Event::ErrSendingEvents => {
